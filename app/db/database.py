@@ -28,4 +28,6 @@ class Database:
     
     def init_db(self):
         """Initialize database tables."""
-        pass
+        from app.db.models import Base
+        Base.metadata.create_all(bind=self.engine)
+        logger.info("Database tables initialized")

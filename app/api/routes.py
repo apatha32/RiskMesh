@@ -34,6 +34,11 @@ class RiskResponse(BaseModel):
     timestamp: datetime
 
 
+# Global instances (initialized in app startup)
+RISK_ENGINE = None
+GRAPH_STORE = None
+
+
 @router.post("/event", response_model=RiskResponse)
 async def handle_event(event: EventRequest):
     """
@@ -48,10 +53,44 @@ async def handle_event(event: EventRequest):
     
     Target latency: <50ms
     """
-    pass
+    try:
+        request_counter.inc()
+        
+        start_time = time.time()
+        
+        # Process event through risk engine
+        result = RISK_ENGINE.process_event(event.dict())
+        
+        # Track metrics
+        latency_ms = (time.time() - start_time) * 1000
+        request_latency.observe(latency_ms)
+        propagation_latency.observe(result.get("propagation_latency_ms", 0))
+        
+        # Update graph metrics
+        graph_node_count.set(GRAPH_STORE.node_count())
+        graph_edge_count.set(GRAPH_STORE.edge_count())
+        
+        logger.info(f"Event processed: risk={result['risk_score']}, latency={latency_ms:.2f}ms")
+        
+        # Return response
+        return RiskResponse(
+            transaction_id=result["transaction_id"],
+            risk_score=result["risk_score"],
+            propagation_depth=result["propagation_depth"],
+            timestamp=result["timestamp"]
+        )
+    
+    except Exception as e:
+        error_counter.inc()
+        logger.error(f"Error processing event: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/stats")
 async def get_stats():
     """Get current system statistics."""
-    pass
+    return {
+        "graph_nodes": GRAPH_STORE.node_count(),
+        "graph_edges": GRAPH_STORE.edge_count(),
+        "timestamp": datetime.utcnow()
+    }
