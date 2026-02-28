@@ -32,6 +32,10 @@ async def startup_event():
     from app.risk.base_risk import BaseRiskCalculator
     from app.risk.risk_engine import RiskEngine
     from app.db.database import Database
+    from app.cache import RedisCache
+    from app.graph.time_decay import TimeDecayCalculator
+    from app.graph.clustering import ClusteringDetector
+    from app.risk.explainer import RiskExplainer
     from app.api import routes
     
     # Initialize components
@@ -53,13 +57,41 @@ async def startup_event():
     except Exception as e:
         logger.warning(f"Database initialization warning: {e}")
     
-    # Initialize risk engine
-    risk_engine = RiskEngine(graph_store, propagator, base_risk_calc, database)
-    logger.info("✓ Risk engine initialized")
+    # Initialize Phase 2 components
+    cache = None
+    try:
+        redis_url = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+        cache = RedisCache(redis_url)
+        logger.info("✓ Redis cache initialized")
+    except Exception as e:
+        logger.warning(f"Redis cache initialization failed: {e}")
+    
+    time_decay = TimeDecayCalculator(decay_rate=0.995, min_risk=0.01)
+    logger.info("✓ Time decay calculator initialized")
+    
+    clustering_detector = ClusteringDetector(density_threshold=0.3)
+    logger.info("✓ Clustering detector initialized")
+    
+    explainer = RiskExplainer()
+    logger.info("✓ Risk explainer initialized")
+    
+    # Initialize risk engine with Phase 2 components
+    risk_engine = RiskEngine(
+        graph_store, 
+        propagator, 
+        base_risk_calc, 
+        database,
+        cache=cache,
+        time_decay=time_decay,
+        clustering_detector=clustering_detector,
+        explainer=explainer
+    )
+    logger.info("✓ Risk engine initialized (with Phase 2 enhancements)")
     
     # Set global instances in routes module
     routes.RISK_ENGINE = risk_engine
     routes.GRAPH_STORE = graph_store
+    routes.CACHE = cache
     
     logger.info("✓ RiskMesh startup complete")
 
