@@ -1,0 +1,40 @@
+name: Deployment
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'app/**'
+      - 'frontend/**'
+      - 'Dockerfile'
+      - 'docker-compose.yml'
+      - 'requirements.txt'
+  release:
+    types: [published]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Deploy notification
+      run: |
+        echo "🚀 Deployment triggered for RiskMesh"
+        echo "Branch: ${{ github.ref }}"
+        echo "Commit: ${{ github.sha }}"
+        echo "Event: ${{ github.event_name }}"
+    
+    # TODO: Add your deployment steps here
+    # Examples:
+    # - Deploy to cloud provider (AWS, GCP, Azure, etc.)
+    # - Push to artifact registry
+    # - Trigger infrastructure updates
+    # - Run post-deployment tests
+    
+    - name: Send deployment notification
+      if: always()
+      run: |
+        echo "✅ Deployment workflow completed"
