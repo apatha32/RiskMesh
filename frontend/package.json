@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "react": "^18.2.0",
-    "react-dom": "^18.2.0",
+    "react-dom": "^19.2.6",
     "recharts": "^2.10.3",
     "lucide-react": "^0.314.0",
     "axios": "^1.6.2"
