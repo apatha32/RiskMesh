@@ -170,7 +170,6 @@ class RiskEngine:
                 age_days = 0.0
                 user_node = self.graph_store.get_node(f"user_{user_id}")
                 if user_node and 'last_seen' in user_node:
-                    from datetime import datetime
                     age_seconds = (datetime.utcnow() - user_node['last_seen']).total_seconds()
                     age_days = max(0, age_seconds / (24 * 3600))
                 
