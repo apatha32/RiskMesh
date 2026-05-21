@@ -182,7 +182,39 @@ Then open http://localhost:8089
 
 ---
 
-## 📊 Monitoring
+## � CI/CD Pipeline
+
+GitHub Actions workflows automatically test, build, and deploy on every push:
+
+### Workflows
+
+- **Backend CI** - Python tests, linting, type checking (pytest + coverage)
+- **Frontend CI** - TypeScript build & linting (Node 18.x & 20.x)
+- **Integration Tests** - End-to-end tests with PostgreSQL + Redis
+- **Docker Build** - Builds and pushes images to GHCR with semantic versioning
+- **Security Checks** - Bandit + Safety vulnerability scanning (daily)
+- **Dependabot** - Automated dependency updates (weekly)
+
+### Status Badges
+
+![Backend CI](https://github.com/apatha32/RiskMesh/actions/workflows/backend-ci.yml/badge.svg)
+![Frontend CI](https://github.com/apatha32/RiskMesh/actions/workflows/frontend-ci.yml/badge.svg)
+![Docker Build](https://github.com/apatha32/RiskMesh/actions/workflows/docker-build.yml/badge.svg)
+
+### Docker Images
+
+Built and pushed to GitHub Container Registry (GHCR):
+```bash
+docker pull ghcr.io/apatha32/riskmesh:latest
+docker pull ghcr.io/apatha32/riskmesh:main
+docker pull ghcr.io/apatha32/riskmesh:1.0.0
+```
+
+See [CI_CD.md](CI_CD.md) for detailed workflow configuration and setup instructions.
+
+---
+
+## �📊 Monitoring
 
 ### Prometheus Queries
 
