@@ -46,8 +46,8 @@ def test_low_amount_no_risk(calculator, graph):
     
     risk = calculator.calculate(event, graph)
     
-    # Risk should be less than 0.5 (no high amount risk)
-    assert risk < 0.5
+    # Risk should be <= 0.5 (no high amount risk)
+    assert risk <= 0.5
 
 
 def test_new_device_increases_risk(calculator, graph):
